@@ -8,10 +8,12 @@ import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 @Controller
@@ -42,5 +44,13 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
         activityDTO.setSessionId(event.getSessionId());
         activityDTO.setPage("logout");
         messagingTemplate.convertAndSend("/topic/tracker", activityDTO);
+    }
+
+    @MessageMapping("/ws/connect")
+    @SendTo("/ws/connect")
+    public String connectedToWebSocket(@Payload String asd) {
+        System.out.println("CONNECTED TO WEBSOCKET");
+        log.debug("Connected to websocket");
+        return "Connected HAHA";
     }
 }

@@ -1,0 +1,31 @@
+
+
+entity ChatRoom {
+	id Long
+    createdAt ZonedDateTime
+    modifiedAt ZonedDateTime
+}
+
+entity Participant {
+	id Long
+}
+
+entity Message {
+	id Long
+    text String
+    createdAt ZonedDateTime
+    mediaUrl String
+}
+
+relationship OneToMany {
+    ChatRoom to Message
+    ChatRoom to Participant
+}
+
+relationship ManyToOne {
+    Participant to User with builtInEntity
+    Message to User with builtInEntity
+}
+
+paginate Message, ChatRoom, Participant with pagination
+dto Message, ChatRoom, Participant with mapstruct
