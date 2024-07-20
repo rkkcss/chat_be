@@ -130,14 +130,12 @@ public class ChatRoomService {
         chatRoomRepository.deleteById(id);
     }
 
-    public void saveMessage(Long roomId, MessageDTO messageDTO) {
+    public MessageDTO saveMessage(Long roomId, MessageDTO messageDTO) {
         // Save message to the database
         Message message = messageMapper.toEntity(messageDTO);
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
-        //        ChatRoomDTO chatRoomDTO = chatRoomMapper.toDto(chatRoom);
-        //        ChatRoomDTO chatRoomDTO = chatRoomRepository.findById(roomId).map(chatRoomMapper::toDto).orElseThrow(() -> new RuntimeException("Not found"));
         message.setChatRoom(chatRoom);
-        //        messageDTO.setChatRoom(chatRoomDTO);
-        messageRepository.save(message);
+        Message savedMessage = messageRepository.save(message);
+        return messageMapper.toDto(savedMessage);
     }
 }

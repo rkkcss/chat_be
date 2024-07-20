@@ -54,17 +54,18 @@ public class RoomService {
         //Find the chatroom
         Optional<ChatRoomDTO> chatRoomDTO = chatRoomRepository.findById(roomId).map(chatRoomMapper::toDto);
 
-        chatRoomService.saveMessage(roomId, messageDTO);
         messageDTO.setUser(userDTO);
+
+        MessageDTO result = chatRoomService.saveMessage(roomId, messageDTO);
         //Send notification for all the users in the chatroom
         chatRoomDTO
             .get()
             .getParticipants()
             .forEach(user -> {
-                notificationService.sendNotification(user.getId(), messageDTO);
+                notificationService.sendNotification(user.getId(), result);
             });
 
-        return messageDTO;
+        return result;
     }
 
     @MessageMapping("/chat.newRoom")
