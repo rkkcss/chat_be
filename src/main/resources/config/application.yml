@@ -24,6 +24,10 @@ springdoc:
   api-docs:
     enabled: false
 ---
+spring.servlet.multipart.enabled: true
+spring.servlet.multipart.max-file-size: 10MB
+spring.servlet.multipart.max-request-size: 10MB
+photo.storage.location: images
 management:
   endpoints:
     web:
@@ -178,13 +182,13 @@ jhipster:
   clientApp:
     name: 'chatappApp'
   # By default CORS is disabled. Uncomment to enable.
-  # cors:
-  #   allowed-origins: "http://localhost:8100,http://localhost:9000"
-  #   allowed-methods: "*"
-  #   allowed-headers: "*"
-  #   exposed-headers: "Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params"
-  #   allow-credentials: true
-  #   max-age: 1800
+  cors:
+    allowed-origins: 'http://localhost:8080,https://localhost:8080,http://localhost:5173,https://localhost:5173,http://localhost:8100,https://localhost:8100,http://localhost:9000,https://localhost:9000,http://localhost:4173'
+    allowed-methods: '*'
+    allowed-headers: '*'
+    exposed-headers: 'Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params'
+    allow-credentials: true
+    max-age: 1800
   mail:
     from: chatapp@localhost
   api-docs:

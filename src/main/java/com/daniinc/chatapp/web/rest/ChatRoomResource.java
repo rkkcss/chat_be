@@ -1,5 +1,6 @@
 package com.daniinc.chatapp.web.rest;
 
+import com.daniinc.chatapp.domain.User;
 import com.daniinc.chatapp.repository.ChatRoomRepository;
 import com.daniinc.chatapp.service.ChatRoomService;
 import com.daniinc.chatapp.service.dto.ChatRoomDTO;
@@ -9,6 +10,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -173,5 +175,10 @@ public class ChatRoomResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<?> createChatRoom(@RequestBody List<Long> userIds) {
+        return chatRoomService.create(userIds);
     }
 }

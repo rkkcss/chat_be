@@ -1,5 +1,6 @@
 package com.daniinc.chatapp.web.rest;
 
+import com.daniinc.chatapp.repository.UserRepository;
 import com.daniinc.chatapp.service.UserService;
 import com.daniinc.chatapp.service.dto.UserDTO;
 import java.util.*;
@@ -27,9 +28,11 @@ public class PublicUserResource {
     private final Logger log = LoggerFactory.getLogger(PublicUserResource.class);
 
     private final UserService userService;
+    private final UserRepository userRepository;
 
-    public PublicUserResource(UserService userService) {
+    public PublicUserResource(UserService userService, UserRepository userRepository) {
         this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -52,5 +55,13 @@ public class PublicUserResource {
 
     private boolean onlyContainsAllowedProperties(Pageable pageable) {
         return pageable.getSort().stream().map(Sort.Order::getProperty).allMatch(ALLOWED_ORDERED_PROPERTIES::contains);
+    }
+
+    @GetMapping("/find-users")
+    public ResponseEntity<List<UserDTO>> searchInUsers(@RequestParam String query, Pageable pageable) {
+        Page<UserDTO> page = userRepository.findUsersBySearch(query, pageable).map(UserDTO::new);
+
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 }

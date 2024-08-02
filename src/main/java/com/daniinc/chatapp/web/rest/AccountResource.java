@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -250,5 +251,16 @@ public class AccountResource {
             password.length() < ManagedUserVM.PASSWORD_MIN_LENGTH ||
             password.length() > ManagedUserVM.PASSWORD_MAX_LENGTH
         );
+    }
+
+    @PostMapping("/account/change-image")
+    public ResponseEntity<String> changeImagePicture(@RequestBody Map<String, String> request) {
+        String imageUrl = request.get("imageUrl");
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Image URL is missing");
+        }
+
+        userService.changeUserImageUrl(imageUrl);
+        return ResponseEntity.status(HttpStatus.OK).body("Successfully changed user image url");
     }
 }

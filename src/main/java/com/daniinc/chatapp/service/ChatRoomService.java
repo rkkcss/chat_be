@@ -2,19 +2,27 @@ package com.daniinc.chatapp.service;
 
 import com.daniinc.chatapp.domain.ChatRoom;
 import com.daniinc.chatapp.domain.Message;
+import com.daniinc.chatapp.domain.Participant;
 import com.daniinc.chatapp.domain.User;
 import com.daniinc.chatapp.repository.ChatRoomRepository;
 import com.daniinc.chatapp.repository.MessageRepository;
+import com.daniinc.chatapp.repository.ParticipantRepository;
+import com.daniinc.chatapp.repository.UserRepository;
 import com.daniinc.chatapp.service.dto.ChatRoomDTO;
 import com.daniinc.chatapp.service.dto.MessageDTO;
 import com.daniinc.chatapp.service.mapper.ChatRoomMapper;
 import com.daniinc.chatapp.service.mapper.MessageMapper;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,19 +41,25 @@ public class ChatRoomService {
     private final UserService userService;
     private final MessageRepository messageRepository;
     private final MessageMapper messageMapper;
+    private final ParticipantRepository participantRepository;
+    private final UserRepository userRepository;
 
     public ChatRoomService(
         ChatRoomRepository chatRoomRepository,
         ChatRoomMapper chatRoomMapper,
         UserService userService,
         MessageRepository messageRepository,
-        MessageMapper messageMapper
+        MessageMapper messageMapper,
+        ParticipantRepository participantRepository,
+        UserRepository userRepository
     ) {
         this.chatRoomRepository = chatRoomRepository;
         this.chatRoomMapper = chatRoomMapper;
         this.userService = userService;
         this.messageRepository = messageRepository;
         this.messageMapper = messageMapper;
+        this.participantRepository = participantRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -105,6 +119,9 @@ public class ChatRoomService {
         Optional<User> user = userService.getUserWithAuthorities();
         log.debug("Request to get all ChatRooms");
         //        Page<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsByUserId(user.get().getId(), pageable);
+        if (user.isEmpty()) {
+            throw new UsernameNotFoundException("User not found");
+        }
         return chatRoomRepository.findChatRoomsByUserId(user.get().getId(), pageable).map(chatRoomMapper::toDto);
     }
 
@@ -137,5 +154,31 @@ public class ChatRoomService {
         message.setChatRoom(chatRoom);
         Message savedMessage = messageRepository.save(message);
         return messageMapper.toDto(savedMessage);
+    }
+
+    public ResponseEntity<?> create(List<Long> userIds) {
+        Optional<ChatRoom> existsRoom = chatRoomRepository.findRoomsByUserIds(userIds, userIds.size());
+        if (existsRoom.isPresent()) {
+            return new ResponseEntity<>(chatRoomMapper.toDto(existsRoom.get()), HttpStatus.FOUND);
+        }
+        ChatRoom chatRoom = new ChatRoom();
+        ChatRoom savedChatRoom = chatRoomRepository.save(chatRoom);
+
+        Set<Participant> participantList = new HashSet<>();
+        userIds.forEach(id -> {
+            Optional<User> user = userRepository.findById(id);
+            Participant participant = new Participant();
+            if (user.isPresent()) {
+                participant.setUser(user.get());
+                participant.setChatRoom(savedChatRoom);
+
+                participantList.add(participant);
+                participantRepository.save(participant);
+            }
+        });
+        chatRoom.setParticipants(participantList);
+
+        ChatRoomDTO result = chatRoomMapper.toDto(savedChatRoom);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 }
