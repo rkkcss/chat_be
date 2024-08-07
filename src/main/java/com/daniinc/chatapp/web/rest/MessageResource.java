@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -143,11 +144,10 @@ public class MessageResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of messages in body.
      */
     @GetMapping("")
-    public ResponseEntity<List<MessageDTO>> getAllMessages(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
+    public ResponseEntity<Page<MessageDTO>> getAllMessages(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         log.debug("REST request to get a page of Messages");
         Page<MessageDTO> page = messageService.findAll(pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
+        return ResponseEntity.status(HttpStatus.OK).body(page);
     }
 
     /**
@@ -157,11 +157,10 @@ public class MessageResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the messageDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{roomId}")
-    public ResponseEntity<List<MessageDTO>> getMessage(@PathVariable("roomId") Long roomId, Pageable pageable) {
+    public ResponseEntity<Page<MessageDTO>> getMessage(@PathVariable("roomId") Long roomId, Pageable pageable) {
         log.debug("REST request to get Message : {}", roomId);
         Page<MessageDTO> page = messageService.getMessegesByRoomId(roomId, pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
+        return ResponseEntity.status(HttpStatus.OK).body(page);
     }
 
     /**
