@@ -15,7 +15,12 @@ import org.springframework.stereotype.Repository;
 @SuppressWarnings("unused")
 @Repository
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
-    @Query("select cr from ChatRoom cr join cr.participants p where p.user.id = ?1")
+    @Query(
+        "select cr from ChatRoom cr " +
+        "join cr.participants p " +
+        "where p.user.id = ?1 " +
+        "order by (select max(m.createdAt) from cr.messages m) desc"
+    )
     Page<ChatRoom> findChatRoomsByUserId(Long userId, Pageable pageable);
 
     @Query(

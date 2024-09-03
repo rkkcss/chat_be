@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.CreationTimestamp;
 
 /**
  * A ChatRoom.
@@ -26,6 +27,7 @@ public class ChatRoom implements Serializable {
     private Long id;
 
     @Column(name = "created_at")
+    @CreationTimestamp
     private ZonedDateTime createdAt;
 
     @Column(name = "modified_at")

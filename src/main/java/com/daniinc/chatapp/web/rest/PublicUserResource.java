@@ -1,5 +1,6 @@
 package com.daniinc.chatapp.web.rest;
 
+import com.daniinc.chatapp.domain.User;
 import com.daniinc.chatapp.repository.UserRepository;
 import com.daniinc.chatapp.service.UserService;
 import com.daniinc.chatapp.service.dto.UserDTO;
@@ -63,5 +64,13 @@ public class PublicUserResource {
 
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/user/{login}")
+    public ResponseEntity<UserDTO> getUser(@PathVariable String login) {
+        log.debug("REST request to get User : {}", login);
+        Optional<User> user = userService.getUserWithAuthoritiesByLogin(login);
+        UserDTO result = user.map(UserDTO::new).orElse(null);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 }

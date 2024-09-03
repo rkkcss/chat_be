@@ -176,7 +176,7 @@ public class ChatRoomService {
                 participantRepository.save(participant);
             }
         });
-        chatRoom.setParticipants(participantList);
+        savedChatRoom.setParticipants(participantList);
 
         ChatRoomDTO result = chatRoomMapper.toDto(savedChatRoom);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
