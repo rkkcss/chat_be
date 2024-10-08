@@ -24,4 +24,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 
     @Query("select m from Message m where m.chatRoom.id = ?1 order by m.createdAt desc")
     Page<Message> findByRoomId(Long roomId, Pageable pageable);
+
+    @Query("select m from Message m where m.chatRoom.id = ?1 and m.mediaUrl is not null and m.mediaUrl <> ''")
+    List<Message> findByMediaUrls(Long roomId);
 }

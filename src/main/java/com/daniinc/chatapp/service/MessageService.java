@@ -9,7 +9,9 @@ import com.daniinc.chatapp.service.dto.MessageDTO;
 import com.daniinc.chatapp.service.dto.UserDTO;
 import com.daniinc.chatapp.service.mapper.MessageMapper;
 import com.daniinc.chatapp.service.mapper.UserMapper;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -142,5 +144,9 @@ public class MessageService {
             }
         }
         throw new UsernameNotFoundException("User not found");
+    }
+
+    public List<String> getRoomMediaFiles(Long roomId) {
+        return messageRepository.findByMediaUrls(roomId).stream().map(Message::getMediaUrl).toList();
     }
 }

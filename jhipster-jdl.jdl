@@ -10,6 +10,13 @@ entity Participant {
 	id Long
 }
 
+entity AvatarImage {
+    id Long
+    createdDate ZonedDateTime
+    url String
+    name String
+}
+
 entity Message {
 	id Long
     text String

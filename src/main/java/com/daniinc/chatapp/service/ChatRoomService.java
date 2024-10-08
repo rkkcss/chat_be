@@ -157,10 +157,19 @@ public class ChatRoomService {
     }
 
     public ResponseEntity<?> create(List<Long> userIds) {
+        Optional<User> ownUser = userService.getUserWithAuthorities();
+
+        if (!ownUser.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+
+        userIds.add(ownUser.get().getId());
         Optional<ChatRoom> existsRoom = chatRoomRepository.findRoomsByUserIds(userIds, userIds.size());
+
         if (existsRoom.isPresent()) {
             return new ResponseEntity<>(chatRoomMapper.toDto(existsRoom.get()), HttpStatus.FOUND);
         }
+
         ChatRoom chatRoom = new ChatRoom();
         ChatRoom savedChatRoom = chatRoomRepository.save(chatRoom);
 
@@ -176,6 +185,7 @@ public class ChatRoomService {
                 participantRepository.save(participant);
             }
         });
+
         savedChatRoom.setParticipants(participantList);
 
         ChatRoomDTO result = chatRoomMapper.toDto(savedChatRoom);

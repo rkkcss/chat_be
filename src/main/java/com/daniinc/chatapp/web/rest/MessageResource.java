@@ -177,4 +177,10 @@ public class MessageResource {
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }
+
+    @GetMapping("/get-all-media/{roomId}")
+    public ResponseEntity<List<String>> getAllMedia(@PathVariable Long roomId) {
+        log.debug("REST request to get all media");
+        return ResponseEntity.status(HttpStatus.OK).body(messageService.getRoomMediaFiles(roomId));
+    }
 }
