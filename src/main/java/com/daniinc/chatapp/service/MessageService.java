@@ -137,13 +137,14 @@ public class MessageService {
 
     public Page<MessageDTO> getMessegesByRoomId(Long roomId, Pageable pageable) {
         Optional<User> user = userService.getUserWithAuthorities();
-        if (user.isPresent()) {
-            Optional<Participant> participant = participantRepository.findByChatRoomIdAndUserId(roomId, user.get().getId());
-            if (participant.isPresent()) {
-                return messageRepository.findByRoomId(roomId, pageable).map(messageMapper::toDto);
-            }
+        User foundUser = user.orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        Optional<Participant> participant = participantRepository.findByChatRoomIdAndUserId(roomId, foundUser.getId());
+
+        if (participant.isPresent()) {
+            return messageRepository.findByRoomId(roomId, pageable).map(messageMapper::toDto);
         }
-        throw new UsernameNotFoundException("User not found");
+        throw new UsernameNotFoundException("Participant not found in the chat room");
     }
 
     public List<String> getRoomMediaFiles(Long roomId) {

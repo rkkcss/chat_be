@@ -118,11 +118,10 @@ public class ChatRoomService {
     public Page<ChatRoomDTO> findAll(Pageable pageable) {
         Optional<User> user = userService.getUserWithAuthorities();
         log.debug("Request to get all ChatRooms");
-        //        Page<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsByUserId(user.get().getId(), pageable);
-        if (user.isEmpty()) {
-            throw new UsernameNotFoundException("User not found");
-        }
-        return chatRoomRepository.findChatRoomsByUserId(user.get().getId(), pageable).map(chatRoomMapper::toDto);
+
+        User foundUser = user.orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return chatRoomRepository.findChatRoomsByUserId(foundUser.getId(), pageable).map(chatRoomMapper::toDto);
     }
 
     /**
@@ -159,36 +158,38 @@ public class ChatRoomService {
     public ResponseEntity<?> create(List<Long> userIds) {
         Optional<User> ownUser = userService.getUserWithAuthorities();
 
-        if (!ownUser.isPresent()) {
+        if (ownUser.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
 
-        userIds.add(ownUser.get().getId());
+        // Optional.get() helyett orElseThrow() használata
+        User user = ownUser.orElseThrow();
+        userIds.add(user.getId());
+
         Optional<ChatRoom> existsRoom = chatRoomRepository.findRoomsByUserIds(userIds, userIds.size());
 
-        if (existsRoom.isPresent()) {
-            return new ResponseEntity<>(chatRoomMapper.toDto(existsRoom.get()), HttpStatus.FOUND);
-        }
+        // Optional.get() helyett ifPresentOrElse használata
+        return existsRoom
+            .map(room -> new ResponseEntity<>(chatRoomMapper.toDto(room), HttpStatus.FOUND)) // Ha a szoba megtalálható
+            .orElseGet(() -> { // Ha nincs szoba, hozzunk létre egy újat
+                ChatRoom chatRoom = new ChatRoom();
+                ChatRoom savedChatRoom = chatRoomRepository.save(chatRoom);
 
-        ChatRoom chatRoom = new ChatRoom();
-        ChatRoom savedChatRoom = chatRoomRepository.save(chatRoom);
+                Set<Participant> participantList = new HashSet<>();
+                userIds.forEach(id -> {
+                    Optional<User> userOptional = userRepository.findById(id);
+                    userOptional.ifPresent(foundUser -> {
+                        Participant participant = new Participant();
+                        participant.setUser(foundUser);
+                        participant.setChatRoom(savedChatRoom);
+                        participantList.add(participant);
+                        participantRepository.save(participant);
+                    });
+                });
 
-        Set<Participant> participantList = new HashSet<>();
-        userIds.forEach(id -> {
-            Optional<User> user = userRepository.findById(id);
-            Participant participant = new Participant();
-            if (user.isPresent()) {
-                participant.setUser(user.get());
-                participant.setChatRoom(savedChatRoom);
-
-                participantList.add(participant);
-                participantRepository.save(participant);
-            }
-        });
-
-        savedChatRoom.setParticipants(participantList);
-
-        ChatRoomDTO result = chatRoomMapper.toDto(savedChatRoom);
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+                savedChatRoom.setParticipants(participantList);
+                ChatRoomDTO result = chatRoomMapper.toDto(savedChatRoom);
+                return ResponseEntity.status(HttpStatus.CREATED).body(result);
+            });
     }
 }

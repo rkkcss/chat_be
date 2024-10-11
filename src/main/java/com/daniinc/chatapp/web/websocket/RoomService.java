@@ -43,26 +43,26 @@ public class RoomService {
     @MessageMapping("/chat.sendMessage/{roomId}")
     @SendTo("/topic/{roomId}")
     public MessageDTO sendMessage(@DestinationVariable Long roomId, MessageDTO messageDTO, Principal principal) {
-        //Search the logged in user
         String username = principal.getName();
         Optional<User> loggedInUser = userService.getUserWithAuthoritiesByLogin(username);
-        if (loggedInUser.isEmpty()) {
-            throw new RuntimeException("User not found");
-        }
-        //Map to DTO
-        UserDTO userDTO = userMapper.userToUserDTO(loggedInUser.get());
-        //Find the chatroom
-        Optional<ChatRoomDTO> chatRoomDTO = chatRoomRepository.findById(roomId).map(chatRoomMapper::toDto);
+
+        User user = loggedInUser.orElseThrow(() -> new RuntimeException("User not found"));
+
+        UserDTO userDTO = userMapper.userToUserDTO(user);
+
+        ChatRoomDTO chatRoomDTO = chatRoomRepository
+            .findById(roomId)
+            .map(chatRoomMapper::toDto)
+            .orElseThrow(() -> new RuntimeException("Chat room not found"));
 
         messageDTO.setUser(userDTO);
 
         MessageDTO result = chatRoomService.saveMessage(roomId, messageDTO);
-        //Send notification for all the users in the chatroom
+
         chatRoomDTO
-            .get()
             .getParticipants()
-            .forEach(user -> {
-                notificationService.sendNotification(user.getId(), result);
+            .forEach(participant -> {
+                notificationService.sendNotification(participant.getId(), result);
             });
 
         return result;

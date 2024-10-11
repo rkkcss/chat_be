@@ -37,10 +37,9 @@ public class ActiveUserService {
     @EventListener
     public void handleWebSocketConnectListener(SessionConnectEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
-        Optional<AdminUserDTO> adminUserDTO = userService
-            .getUserWithAuthoritiesByLogin(Objects.requireNonNull(event.getUser()).getName())
-            .map(AdminUserDTO::new);
-        activeUsers.addUser(adminUserDTO.get());
+        String username = Objects.requireNonNull(event.getUser()).getName();
+        Optional<AdminUserDTO> adminUserDTO = userService.getUserWithAuthoritiesByLogin(username).map(AdminUserDTO::new);
+        adminUserDTO.ifPresent(activeUsers::addUser);
         //        messagingTemplate.convertAndSend("/ws/receive/users", activeUsers.getUsers());
     }
 
@@ -54,12 +53,11 @@ public class ActiveUserService {
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         String sessionId = headerAccessor.getSessionId();
-        log.info("Web socket connection closed: ");
+        log.info("Web socket connection closed: {}", sessionId); // Session ID logolása
+        String username = Objects.requireNonNull(event.getUser()).getName();
 
-        Optional<AdminUserDTO> adminUserDTO = userService
-            .getUserWithAuthoritiesByLogin(Objects.requireNonNull(event.getUser()).getName())
-            .map(AdminUserDTO::new);
-        activeUsers.removeUser(adminUserDTO.get());
+        Optional<AdminUserDTO> adminUserDTO = userService.getUserWithAuthoritiesByLogin(username).map(AdminUserDTO::new);
+        adminUserDTO.ifPresent(activeUsers::removeUser);
         messagingTemplate.convertAndSend("/topic/users", activeUsers.getUsers());
     }
 }

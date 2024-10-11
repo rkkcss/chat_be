@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
-import org.h2.tools.Server;
+//import org.h2.tools.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -108,17 +108,16 @@ public class ChatappApp {
             env.getActiveProfiles().length == 0 ? env.getDefaultProfiles() : env.getActiveProfiles()
         );
     }
-
-    @Bean
-    @Profile("dev")
-    org.h2.tools.Server h2Server() {
-        Server server = new Server();
-        try {
-            server.runTool("-tcp");
-            server.runTool("-tcpAllowOthers");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return server;
-    }
+    //    @Bean
+    //    @Profile("dev")
+    //    org.h2.tools.Server h2Server() {
+    //        Server server = new Server();
+    //        try {
+    //            server.runTool("-tcp");
+    //            server.runTool("-tcpAllowOthers");
+    //        } catch (Exception e) {
+    //            e.printStackTrace();
+    //        }
+    //        return server;
+    //    }
 }
