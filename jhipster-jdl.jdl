@@ -24,9 +24,16 @@ entity Message {
     mediaUrl String
 }
 
+entity Reaction {
+    id Long
+    emotion String
+    createdAt ZonedDateTime
+}
+
 relationship OneToMany {
     ChatRoom to Message
     ChatRoom to Participant
+    Message to Reaction
 }
 
 relationship ManyToOne {

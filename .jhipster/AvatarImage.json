@@ -1,0 +1,27 @@
+{
+  "annotations": {
+    "changelogDate": "20240903154038"
+  },
+  "applications": "*",
+  "fields": [
+    {
+      "fieldName": "id",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "createdDate",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "url",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "name",
+      "fieldType": "String"
+    }
+  ],
+  "name": "AvatarImage",
+  "relationships": [],
+  "searchEngine": "no"
+}
