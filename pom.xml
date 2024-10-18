@@ -949,9 +949,9 @@
                 <profile.test>testprod</profile.test>
                 <liquibase-plugin.hibernate-dialect>org.hibernate.dialect.MySQL8Dialect</liquibase-plugin.hibernate-dialect>
                 <liquibase-plugin.driver>com.mysql.cj.jdbc.Driver</liquibase-plugin.driver>
-                <liquibase-plugin.url>jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/chatapp?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true</liquibase-plugin.url>
-                <liquibase-plugin.username>${MYSQLUSER}</liquibase-plugin.username>
-                <liquibase-plugin.password>${MYSQL_ROOT_PASSWORD}</liquibase-plugin.password>
+<!--                <liquibase-plugin.url>jdbc:mysql://${MYSQLHOST:localhost}:${MYSQLPORT:3306}/${MYSQL_DATABASE:chatapp}?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true</liquibase-plugin.url>-->
+<!--                <liquibase-plugin.username>${MYSQLUSER:root}</liquibase-plugin.username>-->
+<!--                <liquibase-plugin.password>${MYSQL_ROOT_PASSWORD:root_password}</liquibase-plugin.password>-->
             </properties>
             <build>
                 <plugins>
