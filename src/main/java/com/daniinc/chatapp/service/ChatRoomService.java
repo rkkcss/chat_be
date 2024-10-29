@@ -162,16 +162,14 @@ public class ChatRoomService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
 
-        // Optional.get() helyett orElseThrow() használata
         User user = ownUser.orElseThrow();
         userIds.add(user.getId());
 
         Optional<ChatRoom> existsRoom = chatRoomRepository.findRoomsByUserIds(userIds, userIds.size());
 
-        // Optional.get() helyett ifPresentOrElse használata
         return existsRoom
-            .map(room -> new ResponseEntity<>(chatRoomMapper.toDto(room), HttpStatus.FOUND)) // Ha a szoba megtalálható
-            .orElseGet(() -> { // Ha nincs szoba, hozzunk létre egy újat
+            .map(room -> new ResponseEntity<>(chatRoomMapper.toDto(room), HttpStatus.FOUND))
+            .orElseGet(() -> {
                 ChatRoom chatRoom = new ChatRoom();
                 ChatRoom savedChatRoom = chatRoomRepository.save(chatRoom);
 
