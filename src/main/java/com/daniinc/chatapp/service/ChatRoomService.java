@@ -8,10 +8,13 @@ import com.daniinc.chatapp.repository.ChatRoomRepository;
 import com.daniinc.chatapp.repository.MessageRepository;
 import com.daniinc.chatapp.repository.ParticipantRepository;
 import com.daniinc.chatapp.repository.UserRepository;
+import com.daniinc.chatapp.service.dto.AdminUserDTO;
 import com.daniinc.chatapp.service.dto.ChatRoomDTO;
 import com.daniinc.chatapp.service.dto.MessageDTO;
+import com.daniinc.chatapp.service.dto.UserDTO;
 import com.daniinc.chatapp.service.mapper.ChatRoomMapper;
 import com.daniinc.chatapp.service.mapper.MessageMapper;
+import com.daniinc.chatapp.service.mapper.UserMapper;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +46,7 @@ public class ChatRoomService {
     private final MessageMapper messageMapper;
     private final ParticipantRepository participantRepository;
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     public ChatRoomService(
         ChatRoomRepository chatRoomRepository,
@@ -51,7 +55,8 @@ public class ChatRoomService {
         MessageRepository messageRepository,
         MessageMapper messageMapper,
         ParticipantRepository participantRepository,
-        UserRepository userRepository
+        UserRepository userRepository,
+        UserMapper userMapper
     ) {
         this.chatRoomRepository = chatRoomRepository;
         this.chatRoomMapper = chatRoomMapper;
@@ -60,6 +65,7 @@ public class ChatRoomService {
         this.messageMapper = messageMapper;
         this.participantRepository = participantRepository;
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     /**
@@ -133,7 +139,20 @@ public class ChatRoomService {
     @Transactional(readOnly = true)
     public Optional<ChatRoomDTO> findOne(Long id) {
         log.debug("Request to get ChatRoom : {}", id);
-        return chatRoomRepository.findById(id).map(chatRoomMapper::toDto);
+        Optional<AdminUserDTO> loggedInUser = userService.getUserWithAuthorities().map(userMapper::userToAdminUserDTO);
+        Optional<ChatRoomDTO> resultRoom = chatRoomRepository.findById(id).map(chatRoomMapper::toDto);
+
+        AdminUserDTO userDto = loggedInUser.orElseThrow(() -> new RuntimeException("User not found!"));
+        ChatRoomDTO chatRoomDto = resultRoom.orElseThrow(() -> new RuntimeException("Room not found!"));
+
+        //      if we find the user in the participants wont throw error and return the chatroomDto
+        chatRoomDto
+            .getParticipants()
+            .stream()
+            .filter(e -> e.getLogin().equals(userDto.getLogin()))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Participant not found"));
+        return resultRoom;
     }
 
     /**
